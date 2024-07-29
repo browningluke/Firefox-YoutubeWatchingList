@@ -19,5 +19,9 @@
       "id": "youtube-watching-list@browningluke.dev",
       "strict_min_version": "112.0"
     }
+  },
+  "icons": {
+    "48": "icons/icon.png",
+    "96": "icons/icon@2x.png"
   }
 }
