@@ -9,6 +9,17 @@
     "storage",
     "*://*.youtube.com/watch*"
   ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/watch*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
   "background": {
     "scripts": [
       "background.js"
