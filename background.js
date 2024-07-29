@@ -21,13 +21,17 @@ const rootID = browser.contextMenus.create({
 // IndexDB functions
 // ---
 
-function indexDBWrapper(fn) {
+function indexDBWrapper(fn, onUpdateFn) {
   return new Promise(
     function (resolve, reject) {
       const request = indexedDB.open(DATABASE_NAME, DB_VERSION);
 
       request.onupgradeneeded = function (event) {
-        reject(Error("DB not created!"));
+        if (!onUpdateFn) {
+          reject(Error("DB not created!"));
+        } else {
+          resolve(onUpdateFn(event));
+        }
       };
 
       request.onsuccess = function (event) {
@@ -65,6 +69,27 @@ function indexDBGetAll() {
 function indexDBGet(key) {
   return indexDBWrapper((objectStore) => {
     return objectStore.get(key);
+  });
+}
+
+function indexDBAdd(obj) {
+  const object = {
+    ...obj,
+    createdAt: Math.floor(Date.now() / 1000)
+  };
+
+  return indexDBWrapper((objectStore) => {
+    return objectStore.add(object);
+  }, (event) => {
+    // Create object store
+    const db = event.target.result;
+    const objectStore = db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: false });
+
+    // Add all indexes to match schema
+    schema.forEach((item) => {
+      console.log("Creating index: ", item[0]);
+      objectStore.createIndex(...item);
+    })
   });
 }
 
