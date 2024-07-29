@@ -83,5 +83,8 @@ async function openTab(key) {
 }
 
 window.addEventListener("click", async (event) => {
-  await openTab(event.target.id);
+  // Only handle button events
+  if (event.target.tagName === 'BUTTON') {
+    await openTab(event.target.id);
+  }
 });
