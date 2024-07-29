@@ -51,8 +51,7 @@ body {
 }
 
 .item-image {
-    width: 275px;
-    height: auto;
+    height: fit-content;
 }
 
 .restore-button {
