@@ -54,15 +54,34 @@ body {
     height: fit-content;
 }
 
-.restore-button {
-    padding: 5px 10px;
-    background-color: #4CAF50;
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.restore-button, .delete-button {
+    padding: 5px;
     color: white;
+
     border: none;
     border-radius: 3px;
+
     cursor: pointer;
+    width: 100%;
+}
+
+.restore-button {
+    background-color: #4CAF50;
 }
 
 .restore-button:hover {
     background-color: #45a049;
+}
+
+.delete-button {
+    background-color: #f44336;
+}
+
+.delete-button:hover {
+    background-color: #d32f2f;
 }

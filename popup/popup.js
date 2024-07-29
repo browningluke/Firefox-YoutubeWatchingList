@@ -13,7 +13,10 @@ function addItemsToDiv(items) {
                     <div class="item-info">
                         <div class="title">${item.title}</div>
                         <div class="secs">Seconds: ${item.secs}</div>
-                        <button id="${item.id}" class="restore-button">Restore</button>
+                        <div class="button-group">
+                          <button id="${item.id}" class="restore-button">Restore</button>
+                          <button id="${item.id}" class="delete-button">Delete</button>
+                        </div>
                     </div>
                     <img src="${item.frame_data}" alt="${item.title}" class="item-image">
                 `;
