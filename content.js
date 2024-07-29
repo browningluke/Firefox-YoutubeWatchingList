@@ -25,12 +25,42 @@ function grabVideoUri() {
   }
 }
 
+function grabVideoInfo() {
+  // Video time
+
+  const video = document.querySelector("video");
+  if (!video) {
+    throw new Error("Cannot find video player");
+  }
+
+  video.pause();
+
+  const currentTime = Math.floor(video.currentTime);
+  console.log("Current video time: ", currentTime);
+
+  // Video title
+  const titleDiv = document.querySelector("#above-the-fold > #title");
+  if (!titleDiv) {
+    throw new Error("Cannot get video title");
+  }
+  const title = titleDiv.textContent.trim();
+
+  return {
+    title: title,
+    secs: currentTime
+  };
+}
+
 // Function to handle messages from the background script
 function handleMessage(request, _, sendResponse) {
   if (request.action == "ywlGetVideoData") {
     const uriInfo = grabVideoUri();
+    const info = grabVideoInfo();
 
-    sendResponse(uriInfo);
+    sendResponse({
+      ...uriInfo,
+      ...info
+    });
   }
 }
 
