@@ -100,6 +100,41 @@ function indexDBRemove(key) {
 }
 
 // ---
+// IndexDB rpc-like implmentation
+// ---
+
+// Listen for messages from the popup script
+browser.runtime.onMessage.addListener((message, _, sendResponse) => {
+  switch (message.action) {
+    case "idbGetAll":
+      indexDBGetAll().then((items) => {
+        sendResponse({ data: items });
+      }).catch((err) => {
+        sendResponse({ data: [], error: err });
+      });
+      break;
+    case "idbRemove":
+      indexDBRemove(message.data).then((_) => {
+        sendResponse({});
+      }).catch((err) => {
+        sendResponse({ error: err });
+      });
+      break;
+    case "idbGet":
+      indexDBGet(message.data).then((item) => {
+        sendResponse({ data: item });
+      }).catch((err) => {
+        sendResponse({ data: null, error: err });
+      });
+      break;
+    default:
+      break;
+  }
+
+  return true;
+});
+
+// ---
 // Saving video
 // ---
 
