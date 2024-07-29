@@ -19,7 +19,14 @@ function addItemsToDiv(items) {
   });
 }
 
+function cleanDiv() {
+  const itemList = document.getElementById('item-list');
+  itemList.innerHTML = '';
+}
+
 async function loadItemsFromDB() {
+  cleanDiv();
+
   let resp = await browser.runtime.sendMessage({ action: 'idbGetAll', data: null });
 
   if ('error' in resp) {
