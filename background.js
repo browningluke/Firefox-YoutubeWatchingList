@@ -93,6 +93,12 @@ function indexDBAdd(obj) {
   });
 }
 
+function indexDBRemove(key) {
+  return indexDBWrapper((objectStore) => {
+    return objectStore.delete(key);
+  });
+}
+
 // ---
 // Saving video
 // ---
