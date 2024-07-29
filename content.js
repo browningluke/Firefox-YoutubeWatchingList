@@ -51,15 +51,40 @@ function grabVideoInfo() {
   };
 }
 
+function grabVideoFrame() {
+  const video = document.querySelector("video");
+  if (!video) {
+    throw new Error("Cannot find video player");
+  }
+
+  video.pause();
+
+  // Create a canvas to draw the current video frame
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  // Set the canvas size to 240x135
+  canvas.width = 240;
+  canvas.height = 135;
+
+  // Draw the current video frame onto the canvas
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  // Convert the canvas to a PNG data URL
+  return canvas.toDataURL('image/png');
+}
+
 // Function to handle messages from the background script
 function handleMessage(request, _, sendResponse) {
   if (request.action == "ywlGetVideoData") {
     const uriInfo = grabVideoUri();
     const info = grabVideoInfo();
+    const frame = grabVideoFrame();
 
     sendResponse({
       ...uriInfo,
-      ...info
+      ...info,
+      frame_data: frame
     });
   }
 }
