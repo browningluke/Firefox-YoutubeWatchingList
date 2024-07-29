@@ -1,3 +1,15 @@
+const DATABASE_NAME = "ytw-db";
+const DB_VERSION = 1;
+const STORE_NAME = `videos${DB_VERSION}`;
+
+const schema = [
+  ["params", "params", { unique: false }],
+  ["createdAt", "createdAt", { unique: false }],
+  ["frame_data", "frame_data", { unique: false }],
+  ["secs", "secs", { unique: false }],
+  ["title", "title", { unique: false }]
+]
+
 // Create root context menu
 const rootID = browser.contextMenus.create({
   id: `ywl-root`,
