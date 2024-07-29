@@ -58,6 +58,14 @@ function buildURL(id, params, secs) {
   return `${YOUTUBE_BASE_URL}v=${id}&t=${secs}` + (params.length > 0 ? "&" + params.join("&") : "");
 }
 
+async function removeFromDB(key) {
+  let resp = await browser.runtime.sendMessage({ action: 'idbRemove', data: key });
+  if ('error' in resp) {
+    console.error("Failed to delete item!!");
+    throw itemResp.error;
+  }
+}
+
 async function openTab(key) {
   console.log("Opening tab from key: ", key);
 
@@ -75,11 +83,7 @@ async function openTab(key) {
   await browser.tabs.create({ url: url });
 
   // Remove item from db
-  let resp = await browser.runtime.sendMessage({ action: 'idbRemove', data: key });
-  if ('error' in resp) {
-    console.error("Failed to delete item!!");
-    throw itemResp.error;
-  }
+  await removeFromDB(key);
 
   // Refresh UI
   loadItemsFromDB();
@@ -88,6 +92,18 @@ async function openTab(key) {
 window.addEventListener("click", async (event) => {
   // Only handle button events
   if (event.target.tagName === 'BUTTON') {
-    await openTab(event.target.id);
+    switch (event.target.className) {
+      case 'restore-button':
+        await openTab(event.target.id);
+        break;
+
+      case 'delete-button':
+        await removeFromDB(event.target.id);
+        loadItemsFromDB();
+        break;
+
+      default:
+        throw new Error("Unknown button clicked");
+    }
   }
 });
