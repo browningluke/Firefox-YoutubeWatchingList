@@ -1,0 +1,41 @@
+{
+  "manifest_version": 2,
+  "name": "YouTube Watching List",
+  "version": "1.0",
+  "description": "Save / Restore in-progress Youtube videos.",
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage",
+    "*://*.youtube.com/watch*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/watch*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "browser_action": {
+    "default_popup": "popup/popup.html"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "youtube-watching-list@browningluke.dev",
+      "strict_min_version": "112.0"
+    }
+  },
+  "icons": {
+    "48": "icons/icon.png",
+    "96": "icons/icon@2x.png"
+  }
+}
