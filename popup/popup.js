@@ -1,5 +1,5 @@
 // ---
-// Loading / Displaying items
+// Displaying items
 // ---
 
 function addItemsToDiv(items) {
@@ -19,11 +19,15 @@ function addItemsToDiv(items) {
   });
 }
 
-function cleanDiv() {
-  const itemList = document.getElementById('item-list');
-  itemList.innerHTML = '';
+async function loadItemsFromDB() {
+  let resp = await browser.runtime.sendMessage({ action: 'idbGetAll', data: null });
+
+  if ('error' in resp) {
+    throw Error(resp.error);
+  }
+
+  addItemsToDiv(resp.data);
 }
 
-window.onload = () => loadItems([
-  { title: "test1", secs: 100, id: "dQw4w9WgXcQ", frame_data: "<some png data>" }
-]);
+// Call the loadItems function when the page loads
+window.onload = loadItemsFromDB;
