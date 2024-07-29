@@ -105,7 +105,16 @@ function indexDBRemove(key) {
 
 async function saveVideo(tabId) {
   let videoData = await browser.tabs.sendMessage(tabId, { action: "ywlGetVideoData" });
-  // TODO Save video data
+  try {
+    // Add to db
+    await indexDBAdd(videoData);
+
+    // Close tab
+    await browser.tabs.remove(tabId);
+  } catch (e) {
+    console.error("Failed to store video in db");
+    throw e;
+  }
 }
 
 browser.contextMenus.onClicked.addListener(async (_, tab) => {
