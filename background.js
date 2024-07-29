@@ -5,20 +5,18 @@ const rootID = browser.contextMenus.create({
   contexts: ["all"],
 });
 
-function saveVideo(tabId) {
-  browser.tabs.sendMessage(tabId, { action: "ywlGetVideoData" })
-  .then((videoData) => {
-    // TODO Save video data
-  });
+async function saveVideo(tabId) {
+  let videoData = await browser.tabs.sendMessage(tabId, { action: "ywlGetVideoData" });
+  // TODO Save video data
 }
 
-browser.contextMenus.onClicked.addListener((_, tab) => {
+browser.contextMenus.onClicked.addListener(async (_, tab) => {
   // Grab content (url of link selected, or page)
   let content = tab.url
 
   // If page is youtube video
   if (/(youtube\.com|youtu\.be)\/watch/.test(content)) {
-    saveVideo(tab.id);
+    await saveVideo(tab.id);
   } else {
     console.log("Not a youtube video, ignoring...");
   }

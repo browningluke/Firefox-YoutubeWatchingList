@@ -87,6 +87,8 @@ function handleMessage(request, _, sendResponse) {
       frame_data: frame
     });
   }
+
+  return true;
 }
 
 // Listen for messages from the background script
