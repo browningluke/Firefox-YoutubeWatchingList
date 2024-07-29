@@ -1,3 +1,5 @@
+const YOUTUBE_BASE_URL = "https://youtube.com/watch?"
+
 // ---
 // Displaying items
 // ---
@@ -44,3 +46,42 @@ async function loadItemsFromDB() {
 
 // Call the loadItems function when the page loads
 window.onload = loadItemsFromDB;
+
+// ---
+// Opening tabs
+// ---
+
+function buildURL(id, params, secs) {
+  return `${YOUTUBE_BASE_URL}v=${id}&t=${secs}` + (params.length > 0 ? "&" + params.join("&") : "");
+}
+
+async function openTab(key) {
+  console.log("Opening tab from key: ", key);
+
+  // Get item
+  const itemResp = await browser.runtime.sendMessage({ action: 'idbGet', data: key });
+  if ('error' in itemResp) {
+    console.error("Failed to get item!!");
+    throw itemResp.error;
+  }
+
+  const item = itemResp.data;
+
+  // Build URL
+  const url = buildURL(item.id, item.params, item.secs);
+  await browser.tabs.create({ url: url });
+
+  // Remove item from db
+  let resp = await browser.runtime.sendMessage({ action: 'idbRemove', data: key });
+  if ('error' in resp) {
+    console.error("Failed to delete item!!");
+    throw itemResp.error;
+  }
+
+  // Refresh UI
+  loadItemsFromDB();
+}
+
+window.addEventListener("click", async (event) => {
+  await openTab(event.target.id);
+});
