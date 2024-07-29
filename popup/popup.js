@@ -33,7 +33,13 @@ async function loadItemsFromDB() {
     throw Error(resp.error);
   }
 
-  addItemsToDiv(resp.data);
+  // Sort in descending order (newest-first)
+  const items = resp.data;
+  items.sort((a, b) => {
+    return b.createdAt - a.createdAt;
+  });
+
+  addItemsToDiv(items);
 }
 
 // Call the loadItems function when the page loads
