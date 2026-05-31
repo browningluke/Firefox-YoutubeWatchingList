@@ -26,8 +26,6 @@ function grabVideoUri() {
 }
 
 function grabVideoInfo() {
-  // Video time
-
   const video = document.querySelector("video");
   if (!video) {
     throw new Error("Cannot find video player");
@@ -45,9 +43,23 @@ function grabVideoInfo() {
   }
   const title = titleDiv.textContent.trim();
 
+  const duration = isFinite(video.duration) ? Math.floor(video.duration) : null;
+
+  let channel = null;
+  try {
+    const channelLink = document.querySelector("#owner #channel-name a, ytd-channel-name a");
+    if (channelLink && channelLink.textContent) {
+      channel = channelLink.textContent.trim() || null;
+    }
+  } catch (e) {
+    channel = null;
+  }
+
   return {
     title: title,
-    secs: currentTime
+    secs: currentTime,
+    duration: duration,
+    channel: channel
   };
 }
 
