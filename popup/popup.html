@@ -3,12 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Youtube Watching List</title>
+    <title>Watching List</title>
     <link rel="stylesheet" href="styles.css">
     <script src="popup.js"></script>
 </head>
 <body>
-    <div class="container" id="item-list">
+    <div class="popup-shell">
+        <div class="header">
+            <h1 class="logo">▶ Watching List</h1>
+            <div class="controls">
+                <input type="text" id="search" placeholder="Search…" autocomplete="off">
+                <select id="sort" aria-label="Sort videos">
+                    <option value="newest">Newest</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="title">Title A–Z</option>
+                </select>
+                <button id="export-btn" class="export-btn" type="button" title="Export as JSON" aria-label="Export as JSON">Export</button>
+            </div>
+        </div>
+        <div id="item-list" class="item-list" aria-live="polite"></div>
     </div>
 </body>
 </html>
