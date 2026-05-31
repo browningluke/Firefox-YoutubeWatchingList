@@ -7,7 +7,9 @@ const schema = [
   ["createdAt", "createdAt", { unique: false }],
   ["frame_data", "frame_data", { unique: false }],
   ["secs", "secs", { unique: false }],
-  ["title", "title", { unique: false }]
+  ["title", "title", { unique: false }],
+  ["duration", "duration", { unique: false }],
+  ["channel", "channel", { unique: false }]
 ]
 
 // Create root context menu
@@ -21,35 +23,67 @@ const rootID = browser.contextMenus.create({
 // IndexDB functions
 // ---
 
+function ensureObjectStore(event) {
+  const db = event.target.result;
+  let objectStore;
+
+  if (db.objectStoreNames.contains(STORE_NAME)) {
+    objectStore = event.target.transaction.objectStore(STORE_NAME);
+  } else {
+    objectStore = db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: false });
+  }
+
+  schema.forEach((item) => {
+    if (!objectStore.indexNames.contains(item[0])) {
+      console.log("Creating index: ", item[0]);
+      objectStore.createIndex(...item);
+    }
+  });
+}
+
 function indexDBWrapper(fn, onUpdateFn) {
   return new Promise(
     function (resolve, reject) {
       const request = indexedDB.open(DATABASE_NAME, DB_VERSION);
 
       request.onupgradeneeded = function (event) {
-        if (!onUpdateFn) {
-          reject(Error("DB not created!"));
-        } else {
-          resolve(onUpdateFn(event));
+        if (onUpdateFn) {
+          onUpdateFn(event);
         }
       };
 
       request.onsuccess = function (event) {
         const db = event.target.result;
-        // console.log("Database opened successfully");
+
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.close();
+          reject(Error("DB not created!"));
+          return;
+        }
 
         const transaction = db.transaction([STORE_NAME], "readwrite");
         const objectStore = transaction.objectStore(STORE_NAME);
+        let result;
 
         const request = fn(objectStore);
 
         request.onsuccess = function () {
-          // console.log("Transaction success!!");
-          resolve(request.result);
+          result = request.result;
         };
 
         request.onerror = function (event) {
-          reject(Error(`Error adding object: ${event.target.error}`));
+          db.close();
+          reject(Error(`Error performing IndexedDB request: ${event.target.error}`));
+        };
+
+        transaction.onabort = function (event) {
+          db.close();
+          reject(Error(`Error completing transaction: ${event.target.error}`));
+        };
+
+        transaction.oncomplete = function () {
+          db.close();
+          resolve(result);
         };
       };
 
@@ -63,12 +97,27 @@ function indexDBWrapper(fn, onUpdateFn) {
 function indexDBGetAll() {
   return indexDBWrapper((objectStore) => {
     return objectStore.getAll();
-  });
+  }, ensureObjectStore);
 }
 
 function indexDBGet(key) {
   return indexDBWrapper((objectStore) => {
     return objectStore.get(key);
+  }, ensureObjectStore);
+}
+
+function indexDBCount() {
+  return indexDBWrapper((objectStore) => {
+    return objectStore.count();
+  }, ensureObjectStore);
+}
+
+function updateBadge() {
+  indexDBCount().then((count) => {
+    browser.browserAction.setBadgeText({ text: count > 0 ? String(count) : "" });
+    browser.browserAction.setBadgeBackgroundColor({ color: "#cc0000" });
+  }).catch(() => {
+    browser.browserAction.setBadgeText({ text: "" });
   });
 }
 
@@ -79,25 +128,23 @@ function indexDBAdd(obj) {
   };
 
   return indexDBWrapper((objectStore) => {
-    return objectStore.add(object);
-  }, (event) => {
-    // Create object store
-    const db = event.target.result;
-    const objectStore = db.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: false });
-
-    // Add all indexes to match schema
-    schema.forEach((item) => {
-      console.log("Creating index: ", item[0]);
-      objectStore.createIndex(...item);
-    })
+    return objectStore.put(object);
+  }, ensureObjectStore).then((result) => {
+    updateBadge();
+    return result;
   });
 }
 
 function indexDBRemove(key) {
   return indexDBWrapper((objectStore) => {
     return objectStore.delete(key);
+  }, ensureObjectStore).then((result) => {
+    updateBadge();
+    return result;
   });
 }
+
+updateBadge();
 
 // ---
 // IndexDB rpc-like implmentation
@@ -161,5 +208,14 @@ browser.contextMenus.onClicked.addListener(async (_, tab) => {
     await saveVideo(tab.id);
   } else {
     console.log("Not a youtube video, ignoring...");
+  }
+});
+
+browser.commands.onCommand.addListener(async (command) => {
+  if (command === "save-video") {
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+    if (tabs.length > 0 && /(youtube\.com|youtu\.be)\/watch/.test(tabs[0].url)) {
+      await saveVideo(tabs[0].id);
+    }
   }
 });
